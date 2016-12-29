@@ -58,14 +58,16 @@ export default class NpmRegistry extends Registry {
       || removePrefix(requestUrl, registry)[0] === '@';
 
     const headers = {};
+    console.log(pathname, this.getRegistry(pathname));
     if (this.token || (alwaysAuth && requestUrl.startsWith(registry))) {
       const authorization = this.getAuth(pathname);
+      console.log('Auth:', authorization)
       if (authorization) {
         headers.authorization = authorization;
       }
     }
 
-    return this.requestManager.request({
+    const promise = this.requestManager.request({
       url: requestUrl,
       method: opts.method,
       body: opts.body,
@@ -76,6 +78,14 @@ export default class NpmRegistry extends Registry {
       process: opts.process,
       gzip: true,
     });
+    promise.then((d) => {
+        if (d.versions) {
+            const key = Object.keys(d.versions)[0]
+            const version = d.versions[key]
+            console.log(version)
+        }
+    })
+    return promise
   }
 
   async checkOutdated(config: Config, name: string, range: string): CheckOutdatedReturn {
